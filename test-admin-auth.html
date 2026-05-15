@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Admin Auth</title>
+</head>
+<body>
+    <h1>Admin Authentication Test</h1>
+    <button onclick="testLogin()">Test Login</button>
+    <button onclick="testStats()">Test Stats</button>
+    <div id="results"></div>
+
+    <script>
+        async function testLogin() {
+            try {
+                const response = await fetch('/api/admin/login', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        email: 'sivaprasad072611@gmail.com',
+                        password: 'Admin@123456'
+                    })
+                });
+                
+                const data = await response.json();
+                console.log('Login response:', data);
+                
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                    document.getElementById('results').innerHTML = '<p style="color: green;">Login successful! Token stored.</p>';
+                } else {
+                    document.getElementById('results').innerHTML = '<p style="color: red;">Login failed: No token received</p>';
+                }
+            } catch (error) {
+                console.error('Login error:', error);
+                document.getElementById('results').innerHTML = '<p style="color: red;">Login error: ' + error.message + '</p>';
+            }
+        }
+
+        async function testStats() {
+            try {
+                const token = localStorage.getItem('token');
+                console.log('Using token:', token);
+                
+                if (!token) {
+                    document.getElementById('results').innerHTML = '<p style="color: red;">No token found. Please login first.</p>';
+                    return;
+                }
+
+                const response = await fetch('/api/admin/stats', {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const data = await response.json();
+                console.log('Stats response:', data);
+                
+                document.getElementById('results').innerHTML = '<p style="color: green;">Stats loaded: Users=' + data.totalUsers + ', Listings=' + data.totalListings + ', Rentals=' + data.totalRentals + '</p>';
+            } catch (error) {
+                console.error('Stats error:', error);
+                document.getElementById('results').innerHTML = '<p style="color: red;">Stats error: ' + error.message + '</p>';
+            }
+        }
+    </script>
+</body>
+</html>
